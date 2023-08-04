@@ -1,3 +1,7 @@
 # cpp_useful_pack
 ## ADD
-1. Logger -> log all to CSV , TXT
+
+LOGGER
+
+1. log to CSV , TXT
+2. customize colors and allow to set it through functions
