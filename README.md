@@ -2,14 +2,22 @@
 
 ## LOGGER
 
-ADD:
+- ✅  call in any location using `LOG_INIT_..()` ;
+- ❌  log to CSV;
+- ❌  log to TXT;
+- ❌  set colours of each module;
+- ❌  set representation of each module;
+- ❌  __PRETTY_FUNCTION__ on ERROR in exact location;
 
-1. log to CSV , TXT
-2. customize colors and allow to set it through functions
-3. rework __PRETTY_FUNCTION__ impl-n -> must be initiates on ERRORs in exact location
+## Progbar Simple
 
+- ✅  add colours;
+
+## Progbar Fancy
+
+- ✅  add colours;
+  
 ## TIMER
 
-ADD:
+- ❌  each init call creates a named timer;
 
-1. Copy implementation from test_veem
