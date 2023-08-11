@@ -2,6 +2,8 @@
 
 ## LOGGER
 
+Progress:
+
 - ✅  call in any location using `LOG_INIT_..()` ;
 - ❌  log to CSV;
 - ❌  log to TXT;
@@ -11,13 +13,25 @@
 
 ## Progbar Simple
 
-- ✅  add colours;
+Progress:
+
+- 🚧  set colours;
 
 ## Progbar Fancy
 
-- ✅  add colours;
+Progress:
+
+- 🚧  set colours;
   
 ## TIMER
 
-- ❌  each init call creates a named timer;
+Progress:
 
+- 🚧  each init call creates a named timer;
+
+## Description
+
+- ❌  is absent;
+- ✅  ready;
+- 🕒  not in priority;
+- 🚧  in progress;
