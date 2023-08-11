@@ -1,12 +1,25 @@
 #include <iostream>
 #include <thread>
 
-#include <Logger.hpp>
 
 
 ////////////////////////////////////////////////////
-#define OPTION_LOGGER
+// #define OPTION_LOGGER
+#define OPTION_PROGBAR_SIMPLE
+#define OPTION_PROGBAR_FANCY
 ////////////////////////////////////////////////////
+
+
+
+#if defined(OPTION_LOGGER)
+    #include <Logger.hpp>
+#endif
+#if defined(OPTION_PROGBAR_SIMPLE)
+    #include <ProgBar_Simple.hpp>
+#endif
+#if defined(OPTION_PROGBAR_FANCY)
+    #include <ProgBar_Fancy.hpp>
+#endif
 
 
 using namespace std;
@@ -47,8 +60,9 @@ int main(int argc, char** argv){
     ///> Everything that has a operator<< method for ostreams can be logged
     ///> v1
     for (int i = 0; i < argc; i++) {
-    log(LOG_INFO) << "Arg: " << i << " => " << argv[i] << '\n';
+        log(LOG_INFO) << "Arg: " << i << " => " << argv[i];
     }
+
     ///> v2
     float x = 3.1415;
     log(LOG_DEBUG) << "The value of x is " << x << ", the address is " << &x << '\n';
@@ -56,12 +70,12 @@ int main(int argc, char** argv){
 
     std::cout << "~~~~~~ #3 EXAMPLE DIFF MSGS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
     ///> Log some stuff. The initial loglevel is INFO and lower (INFO, WARNING, ERROR) so the debug info is not displayed
-    log(LOG_DEBUG) << "log LOG_DEBUG\n";
-    log(LOG_DONE) << "log LOG_DONE\n";
-    log(LOG_INFO) << "log LOG_INFO\n";
-    log(LOG_WARN) << "log LOG_WARN\n";
-    log(LOG_ERR) << "log LOG_ERROR\n";
-    log(LOG_TIME) << "log LOG_TIME\n";
+    log(LOG_DEBUG) << "log LOG_DEBUG";
+    log(LOG_DONE) << "log LOG_DONE";
+    log(LOG_INFO) << "log LOG_INFO";
+    log(LOG_WARN) << "log LOG_WARN";
+    log(LOG_ERR) << "log LOG_ERROR";
+    log(LOG_TIME) << "log LOG_TIME";
 
 
     std::cout << "~~~~~~ #4 CHANGE LOG STATE TO DEFAULT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
@@ -73,17 +87,25 @@ int main(int argc, char** argv){
     ///> Now the debug info is not displayed
     log(LOG_DEBUG) << "log LOG_DEBUG\n";
 
+    std::cout << "~~~~~~ #6 LOG SNAP 1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+    ///> You can add time snapshots
+    log.add_snapshot("before_sleep");
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-    std::cout << "~~~~~~ #6 FANCY PROGBAR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-    progbar_fancy<uint64_t> p(std::cout, 99999999);
-    for (uint64_t i = 0; i < 99999999; i+=4) {
-        p += 2;
-        p++;
-        ++p;
-    }
-    p.finalize();
+    ///> Log the time since the last snap added
+    log.time_since_last_snap();
 
-    std::cout << "~~~~~~ #7 SIMPLE PROGBAR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+
+    std::cout << "~~~~~~ #7 LOG SNAP 2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+    ///> Log the time since a particular snap was added
+    log.time_since_snap("before_sleep");
+
+    ///> Log the time since the log was initialized
+    log.time_since_start();
+#endif
+#if defined(OPTION_PROGBAR_SIMPLE)
+    
+    std::cout << "~~~~~~ #1 SIMPLE PROGBAR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
     progbar_simple<uint64_t> p2(std::cout, 99999999);
     for (uint64_t i = 0; i < 99999999; i+=4) {
         p2 += 2;
@@ -95,22 +117,18 @@ int main(int argc, char** argv){
     }
     p2.finalize();
 
+#endif
+#if defined(OPTION_PROGBAR_FANCY)
+    
+    std::cout << "~~~~~~ #1 FANCY PROGBAR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+    progbar_fancy<uint64_t> p(std::cout, 99999999);
+    for (uint64_t i = 0; i < 99999999; i+=4) {
+        p += 2;
+        p++;
+        ++p;
+    }
+    p.finalize();
 
-    std::cout << "~~~~~~ #8 LOG SNAP 1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-    ///> You can add time snapshots
-    log.add_snapshot("before_sleep");
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
-    ///> Log the time since the last snap added
-    log.time_since_last_snap();
-
-
-    std::cout << "~~~~~~ #9 LOG SNAP 2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-    ///> Log the time since a particular snap was added
-    log.time_since_snap("before_sleep");
-
-    ///> Log the time since the log was initialized
-    log.time_since_start();
 #endif
 
 }

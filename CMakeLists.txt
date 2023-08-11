@@ -18,7 +18,7 @@ include(CPack)
 set(CMAKE_CXX_STANDARD_REQUIRED 17)                         # set to C++17
 
 # ~~~~~~ Folders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|
-add_subdirectory(Logger)
+add_subdirectory(src)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|
 
 
