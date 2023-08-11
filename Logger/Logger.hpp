@@ -147,15 +147,15 @@ private:
     /*
     *   Set logging level
     */
-    friend string       prep_level              (Logger& l);
+    inline string       prep_level              ();
     /*
     *   Set logging time
     */
-    friend string       prep_time               (Logger& l);
+    inline string       prep_time               ();
     /*
     *   Set logging __PRETTY_FUNCTION__
     */
-    friend string       prep_name               (Logger& l);
+    inline string       prep_name               ();
 
     /*
     *   Get log level
@@ -193,7 +193,7 @@ Logger::Logger(ostream& f, string n)
 template <typename T>
 Logger& operator<<(Logger& l, const T& s) {
     if (l._message_level <= l._loglevel()) {
-        l._fac << s;
+        l._fac << s << "\n";
         return l;
     } else {
         return l;
@@ -203,13 +203,13 @@ Logger& operator<<(Logger& l, const T& s) {
 Logger& Logger::operator()(unsigned ll) {
     _message_level = ll;
     if (_message_level <= _loglevel()) {
-        _fac << prep_time(*this) << prep_level(*this) << prep_name(*this) << ": ";
+        _fac << prep_time() << prep_level() << prep_name() << ": ";
     }
     return *this;
 }
 
-string prep_level(Logger& l) {
-    switch (l._message_level) {
+string Logger::prep_level() {
+    switch (_message_level) {
     case LOG_ERR:
         return LOG_STATUS_ERROR;
         break;
@@ -240,12 +240,12 @@ string prep_level(Logger& l) {
     return "";
 }
 
-string prep_time(Logger& l) {
+string Logger::prep_time() {
     string ret{""};
-    if(l._style >= LOG_STYLE_TIME){
-        time(&l._now);
+    if(_style >= LOG_STYLE_TIME){
+        time(&_now);
         struct tm* t;
-        t = localtime(&l._now);
+        t = localtime(&_now);
         string s, m, h, D, M, Y;
         s = to_string(t->tm_sec);
         m = to_string(t->tm_min);
@@ -266,8 +266,8 @@ string prep_time(Logger& l) {
     return ret;
 }
 
-string prep_name(Logger& l) { 
-    return l._style < LOG_STYLE_LOCATION ? "" :"[ \033[0;34m" + l._name + "\033[0;0m ]";
+string Logger::prep_name() { 
+    return _style < LOG_STYLE_LOCATION ? "" :"[ \033[0;34m" + _name + "\033[0;0m ]";
 }
 
 void Logger::add_snapshot(string n, bool quiet) {
@@ -276,14 +276,14 @@ void Logger::add_snapshot(string n, bool quiet) {
         _snaps.push_back(now);
         _snap_ns.push_back(n);
         if (_loglevel() >= LOG_TIME && !quiet)
-            _fac << LOG_STATUS_TIME << prep_time(*this) << prep_name(*this) << ": Added snap '" << n << "'\n";
+            _fac << LOG_STATUS_TIME << prep_time() << prep_name() << ": Added snap '" << n << "'\n";
 }
 
 void Logger::time_since_start() {
     if (_loglevel() >= LOG_TIME) {
         time(&_now);
         _message_level = LOG_TIME;
-        _fac << prep_time(*this) << prep_level(*this) << prep_name(*this) << ": " << difftime(_now, _start) << "s since instantiation\n";
+        _fac << prep_time() << prep_level() << prep_name() << ": " << difftime(_now, _start) << "s since instantiation\n";
     }
 }
 
@@ -291,7 +291,7 @@ void Logger::time_since_last_snap() {
     if (_loglevel() >= LOG_TIME && _snap_ns.size() > 0) {
         time(&_now);
         _message_level = LOG_TIME;
-        _fac << prep_time(*this) << prep_level(*this) << prep_name(*this) << ": " << difftime(_now, _snaps.back()) << "s since snap '" << _snap_ns.back() << "'\n";
+        _fac << prep_time() << prep_level() << prep_name() << ": " << difftime(_now, _snaps.back()) << "s since snap '" << _snap_ns.back() << "'\n";
     }
 }
 
@@ -301,13 +301,13 @@ void Logger::time_since_snap(string s) {
         auto it = find(_snap_ns.begin(), _snap_ns.end(), s);
         if (it == _snap_ns.end()) {
             _message_level = LOG_WARN;
-            _fac << prep_time(*this) << prep_level(*this) << prep_name(*this) << ": " << "Could not find snapshot " << s << '\n';
+            _fac << prep_time() << prep_level() << prep_name() << ": " << "Could not find snapshot " << s << '\n';
             return;
         }
         unsigned long dist = distance(_snap_ns.begin(), it);
 
         _message_level = LOG_TIME;
-        _fac << prep_time(*this) << prep_level(*this) << prep_name(*this) << ": " << difftime(_now, _snaps[dist]) << "s since snap '" << _snap_ns[dist] << "'\n";
+        _fac << prep_time() << prep_level() << prep_name() << ": " << difftime(_now, _snaps[dist]) << "s since snap '" << _snap_ns[dist] << "'\n";
     }
 }
 
