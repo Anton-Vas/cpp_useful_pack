@@ -13,6 +13,8 @@
 
 #if defined(OPTION_LOGGER)
     #include <Logger.hpp>
+    using namespace cpp_up;
+    using namespace arg;
     void func_thread_one();
     void func_thread_two();
 #endif
@@ -134,7 +136,7 @@ int main(int argc, char** argv){
 #endif
 #if defined(OPTION_PROGBAR_SIMPLE)
     
-    std::cout << "\n~~~~~~ #1 SIMPLE PROGBAR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+    std::cout << "\n~~~~~~ SIMPLE PROGBAR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     progbar_simple<uint64_t> p2(std::cout, 99999999);
     for (uint64_t i = 0; i < 99999999; i+=4) {
         p2 += 2;
@@ -149,7 +151,7 @@ int main(int argc, char** argv){
 #endif
 #if defined(OPTION_PROGBAR_FANCY)
     
-    std::cout << "\n~~~~~~ #1 FANCY PROGBAR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+    std::cout << "\n~~~~~~ FANCY PROGBAR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     progbar_fancy<uint64_t> p(std::cout, 99999999);
     for (uint64_t i = 0; i < 99999999; i+=4) {
         p += 2;

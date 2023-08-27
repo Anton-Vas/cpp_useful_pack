@@ -10,15 +10,32 @@ Just download this `repo` and place the necessary file into your project. All us
 
 ```C++
 /*
-*   include specific file
+*   Include specific file
 */
-#include <Logger.hpp> 
+#include <Logger.hpp>
+
+/*
+*   Enable namespaces
+*/
+using namespace cpp_up; ///> 'cpp_useful_pack' general
+using namespace arg;    ///> Loggers arguments
 
 int some_func (..){
     /*
     *   Mayer's Singleton: specific for 'cout' ostream
     */
     LOG_INIT_COUT();
+    // OR
+    LOG_INIT_CERR();
+    // OR
+    LOG_INIT_CLOG();
+    // OR
+    LOG_INIT_CUSTOM(_X_);
+    // OR
+    Logger::Logger& log = Logger::Logger::get_instance(_X_);
+    // OR
+    Logger& log         = Logger::get_instance(_X_);
+    // where '_X_' is cout/cerr/clog
 
 
     /*
@@ -40,7 +57,7 @@ int some_func (..){
 
 ```C++
     /*
-    *   Every possible log 
+    *   Every possible log statuses
     */
     log(LOG_DEBUG) << "log LOG_DEBUG";    ///> $ [ D 2023-08-21; T 13:17:26 ][ DEBUG   ]: log LOG_DEBUG
     log(LOG_DONE) << "log LOG_DONE";      ///> $ [ D 2023-08-21; T 13:17:26 ][ DONE    ]: log LOG_DONE
@@ -49,15 +66,18 @@ int some_func (..){
     log(LOG_ERR) << "log LOG_ERROR";      ///> $ [ D 2023-08-21; T 13:17:26 ][ ERROR   ]: log LOG_ERROR
     log(LOG_TIME) << "log LOG_TIME";      ///> $ [ D 2023-08-21; T 13:17:26 ][ TIME    ]: log LOG_TIME
 
-    log(..) << "txt\n";
+    log(..) << "txt";
     log(..) << "txt" << val1;
     log(..) << "txt" << val1 << "txt";
+    log(..) << /* any type & any sequence you want */;
 
     /*
     *   Time snap
     */
     log.add_snapshot("SNAP_NUM_one");       ///> create time snap
+
     //....some_work....
+    
     log.time_since_last_snap();             ///> print time since the last added time snap
     // OR
     log.time_since_snap("SNAP_NUM_one");    ///> print time since 'SNAP_NUM_one' init
@@ -65,30 +85,33 @@ int some_func (..){
 ```
 ### Key points :
 
-- ✅  call in any location using;
-- ❌  log to CSV;
-- ❌  log to TXT;
-- ❌  set colors of status/time module;
-- ✅  thread-safe (msg-s won't collide but time snaps are global`);
-- ✅  set representation of each module;
+- ✅  Call in any location;
+- ✅  Easy to use in terms of interface;
+- ❌  Log to CSV;
+- ❌  Log to TXT;
+- ❌  Set colors of status/time module;
+- ✅  Thread-safe (msg-s won't collide but time snaps are global`);
+- ✅  Set representation of each module;
+- 🚧  add '╰─>' for error with std::source_location;
+- ❌  edit 'timesnap' -> output sec < 0;
 
 ## Progbar Simple
 
 Progress:
 
-- ❌  set colors;
+- ❌  Set colors;
 
 ## Progbar Fancy
 
 Progress:
 
-- ❌  set colors;
+- ❌  Set colors;
   
 ## TIMER
 
 Progress:
 
-- ❌  each init call creates a named timer;
+- ❌  Each init call creates a named timer;
 
 ## Description
 
@@ -96,3 +119,4 @@ Progress:
 - ✅  ready;
 - 🕒  not in priority;
 - 🚧  in progress;
+
