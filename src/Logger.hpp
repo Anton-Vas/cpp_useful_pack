@@ -9,8 +9,10 @@
 #include <thread>
 #include <string>
 #include <sstream>
+#include <chrono>
 
 using namespace std;
+using namespace chrono;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  GLOBAL                                                                                                          //
@@ -146,9 +148,10 @@ private:
         return _ll_internal;
     };
 
-    time_t              _now;
-    time_t              _start;
-    vector<time_t>      _snaps;
+    time_t              _clock_now;
+    high_resolution_clock::time_point           _now;
+    high_resolution_clock::time_point           _start;
+    vector<high_resolution_clock::time_point>   _snaps;
     vector<string>      _snap_ns;
     unsigned            _message_level;
     ostream&            _fac;
@@ -166,8 +169,8 @@ private:
 Logger::Logger(ostream& f, unsigned ll)
     : _message_level(args::LOG_SILENT), _fac(f)
 {
-    time(&_now);
-    time(&_start);
+    _now = high_resolution_clock::now();
+    _start = high_resolution_clock::now();
     _loglevel() = ll;
     set_log_style_colors(args::LOG_COLORS_NONE);
 }
@@ -175,8 +178,8 @@ Logger::Logger(ostream& f, unsigned ll)
 Logger::Logger(ostream& f)
     : _message_level(args::LOG_SILENT), _fac(f)
 {
-    time(&_now);
-    time(&_start);
+    _now = high_resolution_clock::now();
+    _start = high_resolution_clock::now();
     set_log_style_colors(args::LOG_COLORS_NONE);
 }
 
@@ -195,23 +198,12 @@ Logger::expr Logger::operator()(unsigned ll){
 string Logger::prep_level() {
     if(_f_stat == args::LOG_STYLE_ON){
         switch (_message_level){
-        case args::LOG_ERR:
-            return string("[" + _color.at(args::LOG_ERR)  +  " ERROR   " + "\033[0;0m]"); break;
-
-        case args::LOG_WARN:
-            return string("[" + _color.at(args::LOG_WARN) +  " WARNING " + "\033[0;0m]"); break;
-
-        case args::LOG_INFO:
-            return string("[" + _color.at(args::LOG_INFO) +  " INFO    " + "\033[0;0m]"); break;
-
-        case args::LOG_DEBUG:
-            return string("[" + _color.at(args::LOG_DEBUG) + " DEBUG   " + "\033[0;0m]"); break;
-
-        case args::LOG_TIME:
-            return string("[" + _color.at(args::LOG_TIME) +  " TIME    " + "\033[0;0m]"); break;
-
-        case args::LOG_DONE:
-            return string("[" + _color.at(args::LOG_DONE) +  " DONE    " + "\033[0;0m]"); break;
+        case args::LOG_ERR:   return string("[" + _color.at(args::LOG_ERR)  +  " ERROR   " + "\033[0;0m]"); break;
+        case args::LOG_WARN:  return string("[" + _color.at(args::LOG_WARN) +  " WARNING " + "\033[0;0m]"); break;
+        case args::LOG_INFO:  return string("[" + _color.at(args::LOG_INFO) +  " INFO    " + "\033[0;0m]"); break;
+        case args::LOG_DEBUG: return string("[" + _color.at(args::LOG_DEBUG) + " DEBUG   " + "\033[0;0m]"); break;
+        case args::LOG_TIME:  return string("[" + _color.at(args::LOG_TIME) +  " TIME    " + "\033[0;0m]"); break;
+        case args::LOG_DONE:  return string("[" + _color.at(args::LOG_DONE) +  " DONE    " + "\033[0;0m]"); break;
         }
     }
     return "";
@@ -220,9 +212,9 @@ string Logger::prep_level() {
 string Logger::prep_time() {
     string ret{""};
     if(_f_time == args::LOG_STYLE_ON){
-        time(&_now);
+        time(&_clock_now);
         struct tm* t;
-        t = localtime(&_now);
+        t = localtime(&_clock_now);
         string s, m, h, D, M, Y;
         s = to_string(t->tm_sec);
         m = to_string(t->tm_min);
@@ -249,9 +241,7 @@ string Logger::prep_time() {
 
 void Logger::add_snapshot(string n, bool quiet) {
     lock_guard<mutex> lock(_mutex);
-    time_t now;
-    time(&now);
-    _snaps.push_back(now);
+    _snaps.push_back(high_resolution_clock::now());
     _snap_ns.push_back(n);
     if (_loglevel() >= args::LOG_TIME && !quiet)
         _message_level = args::LOG_TIME;
@@ -261,25 +251,27 @@ void Logger::add_snapshot(string n, bool quiet) {
 void Logger::time_since_start() {
     lock_guard<mutex> lock(_mutex);
     if (_loglevel() >= args::LOG_TIME) {
-        time(&_now);
+        _now = high_resolution_clock::now();    
         _message_level = args::LOG_TIME;
-        _fac << prep_time() + prep_level() + ": " + to_string(difftime(_now, _start)) + "s since instantiation\n";
+        duration<double> t = duration_cast<duration<double>>(_now - _start);
+        _fac << prep_time() + prep_level() + ": " + to_string(t.count()) + "s since instantiation\n";
     }
 }
 
 void Logger::time_since_last_snap() {
     lock_guard<mutex> lock(_mutex);
     if (_loglevel() >= args::LOG_TIME && _snap_ns.size() > 0) {
-        time(&_now);
+        _now = high_resolution_clock::now();
         _message_level = args::LOG_TIME;
-        _fac << prep_time() + prep_level() + ": " + to_string(difftime(_now, _snaps.back())) + "s since snap '" + _snap_ns.back() + "'\n";
+        duration<double> t = duration_cast<duration<double>>(_now - _snaps.back());
+        _fac << prep_time() + prep_level() + ": " + to_string(t.count()) + "s since last snap '" + _snap_ns.back() + "'\n";
     }
 }
 
 void Logger::time_since_snap(string s) {
     lock_guard<mutex> lock(_mutex);
     if (_loglevel() >= args::LOG_TIME) {
-        time(&_now);
+        _now = high_resolution_clock::now();
         auto it = find(_snap_ns.begin(), _snap_ns.end(), s);
         if (it == _snap_ns.end()) {
             _message_level = args::LOG_WARN;
@@ -287,9 +279,9 @@ void Logger::time_since_snap(string s) {
             return;
         }
         unsigned long dist = distance(_snap_ns.begin(), it);
-
         _message_level = args::LOG_TIME;
-        _fac << prep_time() + prep_level() + ": " + to_string(difftime(_now, _snaps[dist])) + "s since snap '" + _snap_ns[dist] + "'\n";
+        duration<double> t = duration_cast<duration<double>>(_now - _snaps.at(dist));
+        _fac << prep_time() + prep_level() + ": " + to_string(t.count()) + "s since snap '" + _snap_ns[dist] + "'\n";
     }
 }
 

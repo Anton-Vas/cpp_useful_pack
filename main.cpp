@@ -126,6 +126,8 @@ int main(int argc, char** argv){
     log.time_since_snap("SNAP_NUM_one");
 
     ///> Log the time since the log was initialized
+    cout << "wait 1s ..." << endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     log.time_since_start();
 
 
