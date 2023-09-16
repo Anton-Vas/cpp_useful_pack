@@ -14,7 +14,7 @@
 #if defined(OPTION_LOGGER)
     #include <Logger.hpp>
     using namespace cpp_up;
-    using namespace arg;
+    using namespace args;
     void func_thread_one();
     void func_thread_two();
 #endif
@@ -25,8 +25,9 @@
     #include <ProgBar_Fancy.hpp>
 #endif
 
-
 using namespace std;
+
+
 
 int main(int argc, char** argv){
     
@@ -35,16 +36,11 @@ int main(int argc, char** argv){
     ///> call singleton 
     LOG_INIT_COUT();
 
-    ///> explicitly tell the Logger about current thread to avoid combining logs from different threads
-    // log.add_thread_id(this_thread::get_id());
-
     ///> set allowed logs (Debug - enables all, LOG_.. enables specific target  with all previous ones)
     /*
-    *   1.  LOG_SILENT      1
+    *   1.  LOG_SILENT      1                 << Default
     *   2.  LOG_ERR         1-2
-    *       LOG_ERROR       1-2
     *   3.  LOG_WARN        1-2-3
-    *       LOG_WARNING     1-2-3
     *   4.  LOG_INFO        1-2-3-4
     *   5.  LOG_TIME        1-2-3-4-5
     *   6.  LOG_DONE        1-2-3-4-5-6
@@ -69,6 +65,18 @@ int main(int argc, char** argv){
     log.set_log_style_status(LOG_STYLE_ON);
     log(LOG_INFO) << "#3 added TIME and STATUS";
 
+    ///> set colors
+    log.set_log_style_colors(LOG_COLORS_BACKGROUND);
+    log(LOG_DONE) << "color LOG_COLORS_BACKGROUND";
+    log.set_log_style_colors(LOG_COLORS_BOLD);
+    log(LOG_DONE) << "color LOG_COLORS_BOLD";
+    log.set_log_style_colors(LOG_COLORS_REGULAR);
+    log(LOG_DONE) << "color LOG_COLORS_REGULAR";
+    log.set_log_style_colors(LOG_COLORS_NONE);
+    log(LOG_DONE) << "color LOG_COLORS_NONE";
+
+    log.set_log_style_colors(LOG_COLORS_BACKGROUND);
+
 
     std::cout << "\n~~~~~~ PASS MSG & DATA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     ///> Everything that has a operator<< method for ostreams can be logged
@@ -87,20 +95,24 @@ int main(int argc, char** argv){
     log(LOG_ERR) << "log LOG_ERROR";
     log(LOG_TIME) << "log LOG_TIME";
 
+
     std::cout << "\n~~~~~~ CHANGE LOG STATE TO DEFAULT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     ///> Change the log level
     log(LOG_DEBUG) << "log LOG_DEBUG";
     log(LOG_DEFAULT) << "log LOG_DEFAULT is LOG_DONE";
     log.set_log_level(LOG_DEFAULT);
 
+
     std::cout << "\n~~~~~~ EXAMPLE DEBUG LOG AFTER CHANGE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     ///> Now the debug info is not displayed
     log(LOG_DEBUG) << "log LOG_DEBUG";
     log(LOG_DEFAULT) << "log LOG_DEFAULT is LOG_DONE, but where id LOG_DEBUG?";
 
+
     std::cout << "\n~~~~~~ LOG SNAP 1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     ///> You can add time snapshots
     log.add_snapshot("SNAP_NUM_one");
+    cout << "wait 500ms ..." << endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     ///> Log the time since the last snap added
@@ -109,14 +121,18 @@ int main(int argc, char** argv){
 
     std::cout << "\n~~~~~~ LOG SNAP 2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     ///> Log the time since a particular snap was added
+    cout << "wait 500ms ..." << endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     log.time_since_snap("SNAP_NUM_one");
 
     ///> Log the time since the log was initialized
     log.time_since_start();
 
+
     std::cout << "\n~~~~~~ LOG FILE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     ///> Log file
     // log.set_log_file_path("/home/dev/Desktop/cpp_useful_pack");///> IN_PROGRESS
+
 
     std::cout << "\n~~~~~~ THREADS OVERLAPPING ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     /*
@@ -126,12 +142,10 @@ int main(int argc, char** argv){
     *           [ D 2023-08-18; T 11:47:34 ][ ERROR   ]: ...
     */
 
-    thread th_one  (func_thread_one);
-    thread th_two  (func_thread_two);
-    if (th_one.joinable()) { th_one.join(); }
-    if (th_two.joinable()) { th_two.join(); }
-
-    // log.rm_thread_id(this_thread::get_id());
+    // thread th_one  (func_thread_one);
+    // thread th_two  (func_thread_two);
+    // if (th_one.joinable()) { th_one.join(); }
+    // if (th_two.joinable()) { th_two.join(); }
     
 #endif
 #if defined(OPTION_PROGBAR_SIMPLE)
@@ -164,7 +178,6 @@ int main(int argc, char** argv){
 }
 
 #if defined(OPTION_LOGGER)
-
 void func_thread_one(){
     LOG_INIT_COUT();
 

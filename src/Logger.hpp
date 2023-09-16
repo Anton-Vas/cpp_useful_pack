@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -19,80 +20,49 @@ namespace cpp_up{
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  INTERFACE ARGS                                                                                                  //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace arg{
+namespace args{
 /*
 *   Enable/Disable time/status/call_location part in log line
 */
-#define LOG_STYLE_OFF       0
-#define LOG_STYLE_ON        1
+enum action{
+    LOG_STYLE_OFF           = 0,
+    LOG_STYLE_ON            = 1
+};
 
 /*
 *   Log level to set and call
 */
-#define LOG_SILENT      0       ///> SYSTEM DO NOT USE
-#define LOG_ERR         1
-#define LOG_ERROR       1
-#define LOG_WARN        2
-#define LOG_WARNING     2
-#define LOG_INFO        3
-#define LOG_TIME        4
-#define LOG_DONE        5
-#define LOG_DEBUG       6       ///> DEBUG
-#define LOG_DEFAULT     5       ///> without DEBUG
-}
+enum level{
+    LOG_SILENT              = -1,       ///> SYSTEM DO NOT USE
+    LOG_ERR                 = 0,
+    LOG_WARN                = 1,
+    LOG_INFO                = 2,
+    LOG_TIME                = 3,
+    LOG_DONE                = 4,
+    LOG_DEBUG               = 5,        ///> DEBUG
+    LOG_DEFAULT             = 4         ///> without DEBUG
+};
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//  STYLE                                                                                                           //
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace style{
-// #define LOG_COLORS_REGULAR
-// #define LOG_COLORS_BOLD
-#define LOG_COLORS_BACKGROUND
 /*
-*   Log state colors (with/without)
+*   Log color style settings
 */
-#if defined(LOG_COLORS_REGULAR)
-    #define LOG_STATUS_TIME      "[ \033[0;95mTIME\033[0;0m    ]"    ///> PURPLE
-    #define LOG_STATUS_DONE      "[ \033[0;92mDONE\033[0;0m    ]"    ///> GREEN
-    #define LOG_STATUS_DEBUG     "[ \033[0;94mDEBUG\033[0m   ]"      ///> BLUE
-    #define LOG_STATUS_ERROR     "[ \033[0;91mERROR\033[0;0m   ]"    ///> RED
-    #define LOG_STATUS_WARNING   "[ \033[0;93mWARNING\033[0;0m ]"    ///> YELLOW
-    #define LOG_STATUS_INFO      "[ \033[0;90mINFO\033[0;0m    ]"    ///> DARK GRAY
-#elif defined(LOG_COLORS_BOLD)
-    #define LOG_STATUS_TIME      "[ \033[1;35mTIME\033[0;0m    ]"    ///> PURPLE
-    #define LOG_STATUS_DONE      "[ \033[1;32mDONE\033[0;0m    ]"    ///> GREEN
-    #define LOG_STATUS_DEBUG     "[ \033[1;34mDEBUG\033[0m   ]"      ///> BLUE
-    #define LOG_STATUS_ERROR     "[ \033[1;31mERROR\033[0;0m   ]"    ///> RED
-    #define LOG_STATUS_WARNING   "[ \033[1;33mWARNING\033[0;0m ]"    ///> YELLOW
-    #define LOG_STATUS_INFO      "[ \033[1;30mINFO\033[0;0m    ]"    ///> DARK GRAY
-#elif defined(LOG_COLORS_BACKGROUND)
-    #define LOG_STATUS_TIME      "[\033[0;45m TIME    \033[0;0m]"    ///> PURPLE
-    #define LOG_STATUS_DONE      "[\033[0;42m DONE    \033[0;0m]"    ///> GREEN
-    #define LOG_STATUS_DEBUG     "[\033[0;44m DEBUG   \033[0m]"      ///> BLUE
-    #define LOG_STATUS_ERROR     "[\033[0;41m ERROR   \033[0;0m]"    ///> RED
-    #define LOG_STATUS_WARNING   "[\033[0;43m WARNING \033[0;0m]"    ///> YELLOW
-    #define LOG_STATUS_INFO      "[\033[0;40m INFO    \033[0;0m]"    ///> DARK GRAY
-#else
-    #define LOG_STATUS_TIME      "[ TIME    ]"
-    #define LOG_STATUS_DONE      "[ DONE    ]"
-    #define LOG_STATUS_DEBUG     "[ DEBUG   ]"
-    #define LOG_STATUS_ERROR     "[ ERROR   ]"
-    #define LOG_STATUS_WARNING   "[ WARNING ]"
-    #define LOG_STATUS_INFO      "[ INFO    ]"
-#endif
+enum style{
+    LOG_COLORS_NONE         = 0,
+    LOG_COLORS_REGULAR      = 1,
+    LOG_COLORS_BOLD         = 2,
+    LOG_COLORS_BACKGROUND   = 3
+};
 }
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  LOGGER                                                                                                          //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 *   Shorthand for the constructor call (direct all logs to specific stream)
 */
-#define LOG_INIT_COUT()     cpp_up::Logger& log = cpp_up::Logger::get_instance(cout)
-#define LOG_INIT_CERR()     cpp_up::Logger& log = cpp_up::Logger::get_instance(cerr)
-#define LOG_INIT_CLOG()     cpp_up::Logger& log = cpp_up::Logger::get_instance(clog)
-#define LOG_INIT_CUSTOM(X)  cpp_up::Logger& log = cpp_up::Logger::get_instance((X))
+#define LOG_INIT_COUT()     Logger& log = Logger::get_instance(cout)
+#define LOG_INIT_CERR()     Logger& log = Logger::get_instance(cerr)
+#define LOG_INIT_CLOG()     Logger& log = Logger::get_instance(clog)
+#define LOG_INIT_CUSTOM(X)  Logger& log = Logger::get_instance((X))
 
 class Logger {
 public:
@@ -133,7 +103,7 @@ public:
         template <class T>
         expr& operator<<(const T& s) {
             if (!f_blocked){
-                std::stringstream ss;
+                stringstream ss;
                 ss << s;
                 msg.append(ss.str());
             }
@@ -160,6 +130,7 @@ public:
     inline void         set_log_level           (unsigned ll) { _loglevel() = ll; } ///>Set logging level
     inline void         set_log_style_time      (bool);                         ///> Enable/Disable time module in logging
     inline void         set_log_style_status    (bool);                         ///> Enable/Disable status module in logging
+    inline void         set_log_style_colors    (unsigned);                     ///> Set color style of logs
     inline void         set_log_file_path       (string);                       ///> Set PATH to log file 
 
 private:
@@ -171,7 +142,7 @@ private:
     inline string       prep_time               ();                             ///> Set logging time
     static unsigned&    _loglevel               ()                              ///> Get log level
     {
-        static unsigned _ll_internal = LOG_DEFAULT;
+        static unsigned _ll_internal = args::LOG_DEFAULT;
         return _ll_internal;
     };
 
@@ -184,6 +155,8 @@ private:
     string              _file_path              {""};       //IN_PROGRESS
     bool                _f_time                 {false};
     bool                _f_stat                 {false};
+    unsigned            _f_color                {0};
+    array<string, 6>    _color;
     mutex               _mutex;
     inline static thread_local string  _log_msg;
 };
@@ -191,18 +164,20 @@ private:
 
 
 Logger::Logger(ostream& f, unsigned ll)
-    : _message_level(LOG_SILENT), _fac(f)
+    : _message_level(args::LOG_SILENT), _fac(f)
 {
     time(&_now);
     time(&_start);
     _loglevel() = ll;
+    set_log_style_colors(args::LOG_COLORS_NONE);
 }
 
 Logger::Logger(ostream& f)
-    : _message_level(LOG_SILENT), _fac(f)
+    : _message_level(args::LOG_SILENT), _fac(f)
 {
     time(&_now);
     time(&_start);
+    set_log_style_colors(args::LOG_COLORS_NONE);
 }
 
 Logger::expr Logger::operator()(unsigned ll){
@@ -214,57 +189,37 @@ Logger::expr Logger::operator()(unsigned ll){
     else{
         _log_msg.append("_no_log_");
     }
-    // cout << "op()" << endl;
     return {_log_msg, _fac};
 }
 
 string Logger::prep_level() {
-    switch (_message_level) {
-    case LOG_ERR:
-        if(_f_stat == LOG_STYLE_ON){
-            return LOG_STATUS_ERROR;
-        }
-        break;
-    
-    case LOG_WARN:
-        if(_f_stat == LOG_STYLE_ON){
-            return LOG_STATUS_WARNING;
-        }
-        break;
-        
-    case LOG_INFO:
-        if(_f_stat == LOG_STYLE_ON){
-            return LOG_STATUS_INFO;
-        }
-        break;
-        
-    case LOG_DEBUG:
-        if(_f_stat == LOG_STYLE_ON){
-            return LOG_STATUS_DEBUG;
-        }
-        break;
-        
-    case LOG_TIME:
-        if(_f_stat == LOG_STYLE_ON){
-            return LOG_STATUS_TIME;
-        }
-        break;
+    if(_f_stat == args::LOG_STYLE_ON){
+        switch (_message_level){
+        case args::LOG_ERR:
+            return string("[" + _color.at(args::LOG_ERR)  +  " ERROR   " + "\033[0;0m]"); break;
 
-    case LOG_DONE:
-        if(_f_stat == LOG_STYLE_ON){
-            return LOG_STATUS_DONE;
+        case args::LOG_WARN:
+            return string("[" + _color.at(args::LOG_WARN) +  " WARNING " + "\033[0;0m]"); break;
+
+        case args::LOG_INFO:
+            return string("[" + _color.at(args::LOG_INFO) +  " INFO    " + "\033[0;0m]"); break;
+
+        case args::LOG_DEBUG:
+            return string("[" + _color.at(args::LOG_DEBUG) + " DEBUG   " + "\033[0;0m]"); break;
+
+        case args::LOG_TIME:
+            return string("[" + _color.at(args::LOG_TIME) +  " TIME    " + "\033[0;0m]"); break;
+
+        case args::LOG_DONE:
+            return string("[" + _color.at(args::LOG_DONE) +  " DONE    " + "\033[0;0m]"); break;
         }
-        break;
-    
-    default:
-        return "";
     }
     return "";
 }
 
 string Logger::prep_time() {
     string ret{""};
-    if(_f_time == LOG_STYLE_ON){
+    if(_f_time == args::LOG_STYLE_ON){
         time(&_now);
         struct tm* t;
         t = localtime(&_now);
@@ -282,7 +237,12 @@ string Logger::prep_time() {
         if (t->tm_mday < 10) D = "0" + D;
         if (t->tm_mon + 1 < 10) M = "0" + M;
 
-        ret.append("[ \033[0;34mD \033[0;96m" + Y + "-" + M + "-" + D + "; \033[0;34mT \033[0;96m" + h + ":" + m + ":" + s + "\033[0;0m ]");
+        if (_f_color != args::LOG_COLORS_NONE){
+            ret.append("[ \033[0;34mD \033[0;96m" + Y + "-" + M + "-" + D + "; \033[0;34mT \033[0;96m" + h + ":" + m + ":" + s + "\033[0;0m ]");
+        }
+        else{
+            ret.append("[ D " + Y + "-" + M + "-" + D + "; T " + h + ":" + m + ":" + s + " ]");    
+        }    
     }
     return ret;
 }
@@ -293,41 +253,42 @@ void Logger::add_snapshot(string n, bool quiet) {
     time(&now);
     _snaps.push_back(now);
     _snap_ns.push_back(n);
-    if (_loglevel() >= LOG_TIME && !quiet)
+    if (_loglevel() >= args::LOG_TIME && !quiet)
+        _message_level = args::LOG_TIME;
         _fac << prep_time() + prep_level() + ": Added snap '" + n + "'\n";
 }
 
 void Logger::time_since_start() {
     lock_guard<mutex> lock(_mutex);
-    if (_loglevel() >= LOG_TIME) {
+    if (_loglevel() >= args::LOG_TIME) {
         time(&_now);
-        _message_level = LOG_TIME;
+        _message_level = args::LOG_TIME;
         _fac << prep_time() + prep_level() + ": " + to_string(difftime(_now, _start)) + "s since instantiation\n";
     }
 }
 
 void Logger::time_since_last_snap() {
     lock_guard<mutex> lock(_mutex);
-    if (_loglevel() >= LOG_TIME && _snap_ns.size() > 0) {
+    if (_loglevel() >= args::LOG_TIME && _snap_ns.size() > 0) {
         time(&_now);
-        _message_level = LOG_TIME;
+        _message_level = args::LOG_TIME;
         _fac << prep_time() + prep_level() + ": " + to_string(difftime(_now, _snaps.back())) + "s since snap '" + _snap_ns.back() + "'\n";
     }
 }
 
 void Logger::time_since_snap(string s) {
     lock_guard<mutex> lock(_mutex);
-    if (_loglevel() >= LOG_TIME) {
+    if (_loglevel() >= args::LOG_TIME) {
         time(&_now);
         auto it = find(_snap_ns.begin(), _snap_ns.end(), s);
         if (it == _snap_ns.end()) {
-            _message_level = LOG_WARN;
+            _message_level = args::LOG_WARN;
             _fac << prep_time() + prep_level() + ": " + "Could not find snapshot " + s + '\n';
             return;
         }
         unsigned long dist = distance(_snap_ns.begin(), it);
 
-        _message_level = LOG_TIME;
+        _message_level = args::LOG_TIME;
         _fac << prep_time() + prep_level() + ": " + to_string(difftime(_now, _snaps[dist])) + "s since snap '" + _snap_ns[dist] + "'\n";
     }
 }
@@ -338,6 +299,59 @@ void Logger::set_log_style_time(bool _f){
 
 void Logger::set_log_style_status(bool _f){
     _f_stat = _f;
+}
+
+void Logger::set_log_style_colors(unsigned _s){
+    switch (_s)
+    {
+    case args::LOG_COLORS_NONE:
+        _color = {
+            "\033[0;0m", /* LOG_ERR */
+            "\033[0;0m", /* LOG_WARN */
+            "\033[0;0m", /* LOG_INFO */
+            "\033[0;0m", /* LOG_TIME */
+            "\033[0;0m", /* LOG_DONE */
+            "\033[0;0m"  /* LOG_DEBUG */
+        };
+        _f_color = _s;
+        break;
+
+    case args::LOG_COLORS_REGULAR:
+        _color = {
+            "\033[0;91m", /* LOG_ERR */
+            "\033[0;93m", /* LOG_WARN */
+            "\033[0;90m", /* LOG_INFO */
+            "\033[0;95m", /* LOG_TIME */
+            "\033[0;92m", /* LOG_DONE */
+            "\033[0;94m"  /* LOG_DEBUG */
+        };
+        _f_color = _s;
+        break;
+
+    case args::LOG_COLORS_BOLD:
+        _color = {
+            "\033[1;31m", /* LOG_ERR */
+            "\033[1;33m", /* LOG_WARN */
+            "\033[1;30m", /* LOG_INFO */
+            "\033[1;35m", /* LOG_TIME */
+            "\033[1;32m", /* LOG_DONE */
+            "\033[1;34m"  /* LOG_DEBUG */
+        };
+        _f_color = _s;
+        break;
+
+    case args::LOG_COLORS_BACKGROUND:
+        _color = {
+            "\033[0;41m", /* LOG_ERR */
+            "\033[0;43m", /* LOG_WARN */
+            "\033[0;40m", /* LOG_INFO */
+            "\033[0;45m", /* LOG_TIME */
+            "\033[0;42m", /* LOG_DONE */
+            "\033[0;44m"  /* LOG_DEBUG */
+        };
+        _f_color = _s;
+        break;
+    }
 }
 
 void Logger::set_log_file_path(string _path){///> IN_PROGRESS

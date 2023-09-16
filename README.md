@@ -2,7 +2,7 @@
 
 ## Download and use:
 
-Just download this `repo` and place the necessary file into your project. All useful modules are implemented in a single `hpp` file to simplify usage.
+Just download this `repo` and place the necessary file into your project. All useful modules are implemented in a single `.hpp` file to simplify usage.
 
 ## LOGGER
 
@@ -47,6 +47,7 @@ int some_func (..){
     log.set_log_level(LOG_DEBUG);           ///> pass: LOG_DEBUG (enable DEBUG) or LOG_DEFAULT (disable DEBUG)
     log.set_log_style_time(LOG_STYLE_ON);   ///> pass: LOG_STYLE_ON or LOG_STYLE_OFF
     log.set_log_style_status(LOG_STYLE_ON); ///> pass: LOG_STYLE_ON or LOG_STYLE_OFF
+    log.set_log_style_colors(LOG_COLORS_NONE); ///> pass: LOG_COLORS_NONE or LOG_COLORS_REGULAR or LOG_COLORS_BOLD or LOG_COLORS_BACKGROUND
 
     //....some_work....
     
@@ -89,11 +90,11 @@ int some_func (..){
 - ✅  Easy to use in terms of interface;
 - ❌  Log to CSV;
 - ❌  Log to TXT;
-- ❌  Set colors of status/time module;
+- ✅  Set colors of status/time module;
 - ✅  Thread-safe (msg-s won't collide but time snaps are global`);
 - ✅  Set representation of each module;
-- 🚧  add '╰─>' for error with std::source_location;
-- ❌  edit 'timesnap' -> output sec < 0;
+- ❌  add '╰─>' for error with std::source_location;
+- 🚧  'time snap' is high precision;
 
 ## Progbar Simple
 
