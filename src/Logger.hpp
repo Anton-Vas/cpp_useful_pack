@@ -149,9 +149,9 @@ private:
     };
 
     time_t              _clock_now;
-    high_resolution_clock::time_point           _now;
-    high_resolution_clock::time_point           _start;
-    vector<high_resolution_clock::time_point>   _snaps;
+    high_resolution_clock::time_point          _now;
+    high_resolution_clock::time_point          _start;
+    vector<high_resolution_clock::time_point>  _snaps;
     vector<string>      _snap_ns;
     unsigned            _message_level;
     ostream&            _fac;
@@ -161,7 +161,7 @@ private:
     unsigned            _f_color                {0};
     array<string, 6>    _color;
     mutex               _mutex;
-    inline static thread_local string  _log_msg;
+    inline static thread_local string _log_msg;
 };
 
 
@@ -187,7 +187,7 @@ Logger::expr Logger::operator()(unsigned ll){
     lock_guard<mutex> lock(_mutex);
     _message_level = ll;
     if (_message_level <= _loglevel()){
-        _log_msg.append(prep_time() + prep_level() + ": ");
+        _log_msg.append(prep_time() + prep_level() + "‣ ");
     }
     else{
         _log_msg.append("_no_log_");
@@ -254,7 +254,7 @@ void Logger::time_since_start() {
         _now = high_resolution_clock::now();    
         _message_level = args::LOG_TIME;
         duration<double> t = duration_cast<duration<double>>(_now - _start);
-        _fac << prep_time() + prep_level() + ": " + to_string(t.count()) + "s since instantiation\n";
+        _fac << prep_time() + prep_level() + "‣ " + to_string(t.count()) + "s since instantiation\n";
     }
 }
 
@@ -264,7 +264,7 @@ void Logger::time_since_last_snap() {
         _now = high_resolution_clock::now();
         _message_level = args::LOG_TIME;
         duration<double> t = duration_cast<duration<double>>(_now - _snaps.back());
-        _fac << prep_time() + prep_level() + ": " + to_string(t.count()) + "s since last snap '" + _snap_ns.back() + "'\n";
+        _fac << prep_time() + prep_level() + "‣ " + to_string(t.count()) + "s since last snap '" + _snap_ns.back() + "'\n";
     }
 }
 
@@ -275,13 +275,13 @@ void Logger::time_since_snap(string s) {
         auto it = find(_snap_ns.begin(), _snap_ns.end(), s);
         if (it == _snap_ns.end()) {
             _message_level = args::LOG_WARN;
-            _fac << prep_time() + prep_level() + ": " + "Could not find snapshot " + s + '\n';
+            _fac << prep_time() + prep_level() + "‣ " + "Could not find snapshot " + s + '\n';
             return;
         }
         unsigned long dist = distance(_snap_ns.begin(), it);
         _message_level = args::LOG_TIME;
         duration<double> t = duration_cast<duration<double>>(_now - _snaps.at(dist));
-        _fac << prep_time() + prep_level() + ": " + to_string(t.count()) + "s since snap '" + _snap_ns[dist] + "'\n";
+        _fac << prep_time() + prep_level() + "‣ " + to_string(t.count()) + "s since snap '" + _snap_ns[dist] + "'\n";
     }
 }
 

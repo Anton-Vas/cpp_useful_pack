@@ -88,13 +88,12 @@ int some_func (..){
 
 - ✅  Call in any location;
 - ✅  Easy to use in terms of interface;
-- ❌  Log to CSV;
-- ❌  Log to TXT;
+- ❌  Log to file: CSV, TXT;
 - ✅  Set colors of status/time module;
 - ✅  Thread-safe (msg-s won't collide but time snaps are global`);
 - ✅  Set representation of each module;
 - ❌  add '╰─>' for error with std::source_location;
-- 🚧  'time snap' is high precision;
+- ✅  'time snap' is high precision;
 
 ## Progbar Simple
 
