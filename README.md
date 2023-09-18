@@ -92,20 +92,22 @@ int some_func (..){
 - ✅  Set colors of status/time module;
 - ✅  Thread-safe (msg-s won't collide but time snaps are global`);
 - ✅  Set representation of each module;
-- ❌  add '╰─>' for error with std::source_location;
 - ✅  'time snap' is high precision;
 
-## Progbar Simple
+## ProgBar
 
 Progress:
 
 - ❌  Set colors;
 
-## Progbar Fancy
+## ProgSpin
 
 Progress:
 
-- ❌  Set colors;
+- ✅  Call in any location;
+- ✅  Easy to use in terms of interface;
+- ❌  Set colors of status/time module;
+- ❌  MultiProgSpi - multiple ProgSpin handler;
   
 ## TIMER
 

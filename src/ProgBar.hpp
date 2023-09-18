@@ -1,13 +1,17 @@
 #pragma once
 
 #include <iostream>
+#include <chrono>
 #include <iomanip>
 #include <cmath>
 
 using namespace std;
+using namespace chrono;
+
+namespace cpp_up{
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//  PROGBAR_FANCY                                                                                                   //
+//  ProgBar OLD                                                                                                     //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
@@ -46,29 +50,30 @@ string format_duration(T xms) {
 }
 
 template <typename T>
-class progbar_fancy {
+class ProgBar {
 public:
-    progbar_fancy                               (ostream& f, T max, uint64_t poll_interval = 1000, uint64_t width = 30, string unit = "")
-      : _max(static_cast<double>(max)), _sum(0), _state(0), _incr(0), _fac(f), _width(width), _unit(unit), _final(false) {
+    inline              ProgBar                 (ostream& f, T max, uint64_t poll_interval = 1000, uint64_t width = 30, string unit = "")
+      : _max(static_cast<double>(max)), _sum(0), _state(0), _incr(0), _fac(f), _width(width), _unit(unit), _final(false)
+    {
         _incr = _max / static_cast<double>(_width);
-        _start = chrono::system_clock::now();
+        _start = system_clock::now();
         _before = _start;
         _state = _incr;
-        _poll_interval = chrono::milliseconds(poll_interval);
+        _poll_interval = milliseconds(poll_interval);
         _fac << setprecision(2) << fixed;
         _fac.flush();
     };
-    void                check                   () {
-        chrono::system_clock::time_point now = chrono::system_clock::now();
-        chrono::milliseconds diff = chrono::duration_cast<chrono::milliseconds>(now - _before);
+    inline void         check                   () {
+        system_clock::time_point now = system_clock::now();
+        milliseconds diff = duration_cast<milliseconds>(now - _before);
         if (diff > _poll_interval) {
-            chrono::seconds diff_start = chrono::duration_cast<chrono::seconds>(now - _start);
-            double ds = chrono::duration<double>(diff_start).count();
+            seconds diff_start = duration_cast<seconds>(now - _start);
+            double ds = duration<double>(diff_start).count();
             double dss = _sum / ds;
 
             int64_t dss_i = ceil((_max - _sum) / dss);
 
-            auto eta = chrono::duration<uint64_t>(dss_i);
+            auto eta = duration<uint64_t>(dss_i);
 
             string prefix = "";
             if (dss > 1e15) {
@@ -89,40 +94,44 @@ public:
             }
             _before = now;
             _fac << "\r" << flush;
-            _fac << "|";
+            _fac << "[";
             for (double i = 0; i < _max; i += _incr) {
-                _fac << (i < _sum ? "=" : " ");
+                _fac << (i < _sum ? "#" : ".");
             }
-            _fac << "| " << (_sum / _max) * 100 << "% | " << dss << " " << prefix << _unit << "/s | " << format_duration<uint64_t>(diff_start.count()) << " | " << format_duration<uint64_t>(eta.count()) << flush;
+            _fac << "] " << (_sum / _max) * 100 << "% | " << dss << " " << prefix << _unit << "/s | " << format_duration<uint64_t>(diff_start.count()) << " | " << format_duration<uint64_t>(eta.count()) << flush;
             if (_sum >= _max) {
                 finalize();
             }
         }
     }
-    void                finalize                () {
+    inline void         finalize                () {
         if (!_final) {
             _fac << endl;
             _final = true;
             _fac.flush();
         }
     }
-    void                operator()              (const T& x) {
+
+    /*
+    *   Increment progress
+    */
+    inline void         operator()              (const T& x) {
         double dx = static_cast<double>(x);
         _sum = dx;
         check();
     }
-    progbar_fancy&      operator++              () {
+    inline ProgBar&     operator++              () {
         _sum += 1;
         check();
         return *this;
     }
-    progbar_fancy       operator++              (int) {
-        progbar_fancy copy(*this);
+    inline ProgBar      operator++              (int) {
+        ProgBar copy(*this);
         _sum += 1;
         check();
         return copy;
     }
-    progbar_fancy&      operator+=              (const T& x) {
+    inline ProgBar&     operator+=              (const T& x) {
         _sum += static_cast<double>(x);
         check();
         return *this;
@@ -135,9 +144,11 @@ private:
     double              _incr;
     ostream&            _fac;
     uint64_t            _width;
-    chrono::milliseconds                _poll_interval;
-    chrono::system_clock::time_point    _before;
-    chrono::system_clock::time_point    _start;
+    milliseconds                _poll_interval;
+    system_clock::time_point    _before;
+    system_clock::time_point    _start;
     string              _unit;
     bool                _final;
 };
+
+}

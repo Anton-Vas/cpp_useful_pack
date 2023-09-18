@@ -60,5 +60,12 @@
         "cinttypes": "cpp",
         "typeindex": "cpp",
         "typeinfo": "cpp"
-    }
+    },
+    "cSpell.words": [
+        "CERR",
+        "COUT",
+        "ostream",
+        "PROGSPIN",
+        "ROUNDBAR"
+    ]
 }

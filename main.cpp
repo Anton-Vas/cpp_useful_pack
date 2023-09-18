@@ -4,34 +4,32 @@
 
 
 ////////////////////////////////////////////////////
-#define OPTION_LOGGER
-// #define OPTION_PROGBAR_SIMPLE
-// #define OPTION_PROGBAR_FANCY
-////////////////////////////////////////////////////
+// #define LOGGER
+// #define PROGBAR
+#define PROGSPIN
 
-
-
-#if defined(OPTION_LOGGER)
+#if defined(LOGGER)
     #include <Logger.hpp>
     using namespace cpp_up;
     using namespace args;
-    void func_thread_one();
-    void func_thread_two();
 #endif
-#if defined(OPTION_PROGBAR_SIMPLE)
-    #include <ProgBar_Simple.hpp>
+#if defined(PROGBAR)
+    #include <ProgBar.hpp>
+    using namespace cpp_up;
 #endif
-#if defined(OPTION_PROGBAR_FANCY)
-    #include <ProgBar_Fancy.hpp>
+#if defined(PROGSPIN)
+    #include <ProgSpin.hpp>
+    using namespace cpp_up;
+    using namespace args;
 #endif
+////////////////////////////////////////////////////
 
 using namespace std;
 
 
-
 int main(int argc, char** argv){
     
-#if defined(OPTION_LOGGER)
+#if defined(LOGGER)
     std::cout << "\n~~~~~~ CHANGE STREAM & LOG STATE NoDEBUG ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     ///> call singleton 
     LOG_INIT_COUT();
@@ -74,6 +72,8 @@ int main(int argc, char** argv){
     log(LOG_DONE) << "color LOG_COLORS_REGULAR";
     log.set_log_style_colors(LOG_COLORS_NONE);
     log(LOG_DONE) << "color LOG_COLORS_NONE";
+    log.set_log_style_colors(LOG_COLORS_UNDERLINE);
+    log(LOG_DONE) << "color LOG_COLORS_UNDERLINE";
 
     log.set_log_style_colors(LOG_COLORS_BACKGROUND);
 
@@ -144,67 +144,103 @@ int main(int argc, char** argv){
     *           [ D 2023-08-18; T 11:47:34 ][ ERROR   ]: ...
     */
 
-    // thread th_one  (func_thread_one);
-    // thread th_two  (func_thread_two);
-    // if (th_one.joinable()) { th_one.join(); }
-    // if (th_two.joinable()) { th_two.join(); }
-    
-#endif
-#if defined(OPTION_PROGBAR_SIMPLE)
-    
-    std::cout << "\n~~~~~~ SIMPLE PROGBAR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
-    progbar_simple<uint64_t> p2(std::cout, 99999999);
-    for (uint64_t i = 0; i < 99999999; i+=4) {
-        p2 += 2;
-        p2++;
-        ++p2;
-        if (i % 10000000 == 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    auto func_thread_one = [](){
+        LOG_INIT_COUT();
+        log(LOG_INFO) << "thread ONE is alive";
+        int count {0};
+        while(count <= 20){
+            log(LOG_WARN) << "thread ONE : " << 1111 << " val";
+            count++;
         }
-    }
-    p2.finalize();
-
-#endif
-#if defined(OPTION_PROGBAR_FANCY)
+        log(LOG_INFO) << "thread ONE kill";
+    };
+    auto func_thread_two = [](){
+        LOG_INIT_COUT();
+        log(LOG_INFO) << "thread TWO is alive";
+        int count {0};
+        while(count <= 20){
+            log(LOG_ERR) << "thread TWO : " << 2222 << " val";
+            count++;
+        }
+        log(LOG_INFO) << "thread ONE kill";
+    };
+    thread th_one  (func_thread_one);
+    thread th_two  (func_thread_two);
+    if (th_one.joinable()) { th_one.join(); }
+    if (th_two.joinable()) { th_two.join(); }
     
-    std::cout << "\n~~~~~~ FANCY PROGBAR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
-    progbar_fancy<uint64_t> p(std::cout, 99999999);
-    for (uint64_t i = 0; i < 99999999; i+=4) {
-        p += 2;
-        p++;
-        ++p;
-    }
-    p.finalize();
+#endif
+#if defined(PROGBAR)
+    
+    // std::cout << "\n~~~~~~ PROGBAR OLD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+    
+    // int some_size = 99999999;
+    // ProgBar<uint64_t> pb(std::cout, some_size);
+    // for (uint64_t i = 0; i < some_size; i+=4) {
+    //     pb += 2;
+    //     pb++;
+    //     ++pb;
+    // }
+    // pb.finalize();
 
+    std::cout << "\n~~~~~~ PROGBAR NEW ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+
+#endif
+#if defined(PROGSPIN)
+    
+    std::cout << "\n~~~~~~ PROGSPIN STANDARD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+    ///> Init
+    PS_INIT_COUT();
+
+    ///> General usage
+    for (int i = 0; i < 99999999; ++i){
+        //...
+        ps.update();
+    }
+    ps.reset();
+
+
+    std::cout << "\n~~~~~~ PROGSPIN COMPLETE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+    ///> Change style
+    ps.set_style(args::PS_STYLE_CIRCLE);
+
+    ///> Situation: completion during loop
+    for (int i = 0; i < 99999999; ++i){
+        //...
+        if ( i == 99999){
+            ps.done();
+            break;
+        }
+        //...
+        ps.update();
+    }
+    ps.reset();
+
+    std::cout << "\n~~~~~~ PROGSPIN ERROR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+    ///> Change style
+    ps.set_style(args::PS_STYLE_CIRCLE);
+    
+    ///> Situation: error during loop
+    for (int i = 0; i < 99999999; ++i){
+        //...
+        if ( i == 99999){
+            ps.error();
+            break;
+        }
+        //...
+        ps.update();
+    }
+    ps.reset();
+
+
+    std::cout << "\n~~~~~~ PROGSPIN DOWNLOAD/PROCCESS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+    ///> Situation: download or proccess fixed sized resource
+    ps.proccess("file_name", 99999999);
+    for (int i = 0; i < 99999999; ++i){
+        //...
+        ps.update();
+    }
+    ps.reset();
 #endif
 }
 
-#if defined(OPTION_LOGGER)
-void func_thread_one(){
-    LOG_INIT_COUT();
-
-    log(LOG_INFO) << "thread ONE is alive";
-    int count {0};
-    while(count <= 20){
-        log(LOG_WARN) << "thread ONE : " << 1111 << " val";
-        count++;
-    }
-
-    // log.rm_thread_id(this_thread::get_id());
-    log(LOG_INFO) << "thread ONE kill";
-}
-
-void func_thread_two(){
-    LOG_INIT_COUT();
-
-    log(LOG_INFO) << "thread TWO is alive";
-    int count {0};
-    while(count <= 20){
-        log(LOG_ERR) << "thread TWO : " << 2222 << " val";
-        count++;
-    }
-
-    // log.rm_thread_id(this_thread::get_id());
-    log(LOG_INFO) << "thread ONE kill";
-}
-#endif

@@ -52,7 +52,8 @@ enum style{
     LOG_COLORS_NONE         = 0,
     LOG_COLORS_REGULAR      = 1,
     LOG_COLORS_BOLD         = 2,
-    LOG_COLORS_BACKGROUND   = 3
+    LOG_COLORS_BACKGROUND   = 3,
+    LOG_COLORS_UNDERLINE    = 4
 };
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,9 +86,9 @@ public:
     
     /*
     *   OVERLOADED OPERATOR: I + O + log assembly
+    *   - assemble & release msg from thread-specific container
     */
-    struct expr                                                                 ///> assemble & release msg from thread-specific container
-    {
+    struct expr{
         expr (string& _msg, ostream& _fac) : msg(_msg), fac(_fac){
             if(msg.find("_no_log_") != string::npos){
                 f_blocked = true;
@@ -186,12 +187,11 @@ Logger::Logger(ostream& f)
 Logger::expr Logger::operator()(unsigned ll){
     lock_guard<mutex> lock(_mutex);
     _message_level = ll;
-    if (_message_level <= _loglevel()){
+    if (_message_level <= _loglevel())
         _log_msg.append(prep_time() + prep_level() + "‣ ");
-    }
-    else{
+    else
         _log_msg.append("_no_log_");
-    }
+    
     return {_log_msg, _fac};
 }
 
@@ -233,7 +233,7 @@ string Logger::prep_time() {
             ret.append("[ \033[0;34mD \033[0;96m" + Y + "-" + M + "-" + D + "; \033[0;34mT \033[0;96m" + h + ":" + m + ":" + s + "\033[0;0m ]");
         }
         else{
-            ret.append("[ D " + Y + "-" + M + "-" + D + "; T " + h + ":" + m + ":" + s + " ]");    
+            ret.append("[ D " + D + "." + M + "." + Y + "; T " + h + ":" + m + ":" + s + " ]");    
         }    
     }
     return ret;
@@ -312,7 +312,7 @@ void Logger::set_log_style_colors(unsigned _s){
         _color = {
             "\033[0;91m", /* LOG_ERR */
             "\033[0;93m", /* LOG_WARN */
-            "\033[0;90m", /* LOG_INFO */
+            "\033[0;97m", /* LOG_INFO */
             "\033[0;95m", /* LOG_TIME */
             "\033[0;92m", /* LOG_DONE */
             "\033[0;94m"  /* LOG_DEBUG */
@@ -324,7 +324,7 @@ void Logger::set_log_style_colors(unsigned _s){
         _color = {
             "\033[1;31m", /* LOG_ERR */
             "\033[1;33m", /* LOG_WARN */
-            "\033[1;30m", /* LOG_INFO */
+            "\033[1;37m", /* LOG_INFO */
             "\033[1;35m", /* LOG_TIME */
             "\033[1;32m", /* LOG_DONE */
             "\033[1;34m"  /* LOG_DEBUG */
@@ -336,13 +336,27 @@ void Logger::set_log_style_colors(unsigned _s){
         _color = {
             "\033[0;41m", /* LOG_ERR */
             "\033[0;43m", /* LOG_WARN */
-            "\033[0;40m", /* LOG_INFO */
+            "\033[0;47m", /* LOG_INFO */
             "\033[0;45m", /* LOG_TIME */
             "\033[0;42m", /* LOG_DONE */
             "\033[0;44m"  /* LOG_DEBUG */
         };
         _f_color = _s;
         break;
+
+    case args::LOG_COLORS_UNDERLINE:
+        _color = {
+            "\033[4;31m", /* LOG_ERR */
+            "\033[4;33m", /* LOG_WARN */
+            "\033[4;37m", /* LOG_INFO */
+            "\033[4;35m", /* LOG_TIME */
+            "\033[4;32m", /* LOG_DONE */
+            "\033[4;34m"  /* LOG_DEBUG */
+        };
+        _f_color = _s;
+        break;
+
+        
     }
 }
 
