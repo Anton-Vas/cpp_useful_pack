@@ -14,7 +14,7 @@ namespace args{
 /*
 *   Style settings
 */
-enum style{
+enum ps_style{
     PS_STYLE_SQUARE     = 0,
     PS_STYLE_CIRCLE     = 1,
     PS_STYLE_LINUX      = 2
@@ -65,7 +65,7 @@ public:
     /*
     *   SYSTEM SETUP
     */
-    inline void         set_style               (const args::style);
+    inline void         set_style               (const args::ps_style);
 
 private:
     /*
@@ -143,7 +143,7 @@ string ProgSpin::prep_iterations(){
 }
 
 string ProgSpin::prep_txt(){
-    return "\033[1;34m" + _curr_txt + "\033[0;0m";
+    return "note \033[1;31m:\033[0;0m \033[1;96m" + _curr_txt + "\033[0;0m";
 }
 
 
@@ -212,7 +212,7 @@ void ProgSpin::process(const uint64_t _size, const string _txt){
     process(_size);
 }
 
-void ProgSpin::set_style(const args::style _s){
+void ProgSpin::set_style(const args::ps_style _s){
     switch (_s)
     {
     case args::PS_STYLE_SQUARE:

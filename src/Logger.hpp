@@ -26,7 +26,7 @@ namespace args{
 /*
 *   Enable/Disable time/status/call_location part in log line
 */
-enum action{
+enum l_action{
     LOG_STYLE_OFF           = 0,
     LOG_STYLE_ON            = 1
 };
@@ -34,7 +34,7 @@ enum action{
 /*
 *   Log level to set and call
 */
-enum level{
+enum l_level{
     LOG_SILENT              = -1,       ///> SYSTEM DO NOT USE
     LOG_ERR                 = 0,
     LOG_WARN                = 1,
@@ -48,7 +48,7 @@ enum level{
 /*
 *   Log color style settings
 */
-enum style{
+enum l_style{
     LOG_COLORS_NONE         = 0,
     LOG_COLORS_REGULAR      = 1,
     LOG_COLORS_BOLD         = 2,

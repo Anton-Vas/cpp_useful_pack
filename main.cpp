@@ -2,16 +2,16 @@
 #include <thread>
 
 
+using namespace std;
+
 
 ////////////////////////////////////////////////////
-// #define LOGGER
+#define LOGGER
 // #define PROGBAR
 #define PROGSPIN
 
 #if defined(LOGGER)
     #include <Logger.hpp>
-    using namespace cpp_up;
-    using namespace args;
 #endif
 #if defined(PROGBAR)
     #include <ProgBar.hpp>
@@ -19,12 +19,11 @@
 #endif
 #if defined(PROGSPIN)
     #include <ProgSpin.hpp>
-    using namespace cpp_up;
-    using namespace args;
 #endif
-////////////////////////////////////////////////////
 
-using namespace std;
+using namespace cpp_up;
+using namespace args;
+////////////////////////////////////////////////////
 
 
 int main(int argc, char** argv){
@@ -88,6 +87,7 @@ int main(int argc, char** argv){
 
     std::cout << "\n~~~~~~ EXAMPLE DIFF MSGS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     ///> Log some stuff. The initial loglevel is INFO and lower (INFO, WARNING, ERROR) so the debug info is not displayed
+    log.set_log_style_time(LOG_STYLE_OFF);
     log(LOG_DEBUG) << "log LOG_DEBUG";
     log(LOG_DONE) << "log LOG_DONE";
     log(LOG_INFO) << "log LOG_INFO";
