@@ -196,12 +196,12 @@ int main(int argc, char** argv){
     ps.set_style(args::PS_STYLE_LINUX);
 
     ///> Some sizes 
-    const int big_size                  {1000}; ///> 100% of resource
-    const int small_size                {400};  ///> N%  of resource -> INTERRUPT
+    const int big_size                  {100}; ///> 100% of resource
+    const int small_size                {40};  ///> N%  of resource -> INTERRUPT
     const chrono::milliseconds wait_ms  {50};
 
     ///> General usage
-    ps.proccess(big_size);
+    ps.process(big_size);
     for (int i = 0; i < big_size; ++i){
         //...
         this_thread::sleep_for(wait_ms);
@@ -218,7 +218,7 @@ int main(int argc, char** argv){
     ps.set_style(args::PS_STYLE_SQUARE);
 
     ///> Situation: error during loop (critical error)
-    ps.proccess(big_size);
+    ps.process(big_size, "iteration with ERROR");
     for (int i = 0; i < big_size; ++i){
         //...
         if ( i == small_size){
@@ -240,7 +240,7 @@ int main(int argc, char** argv){
     ps.set_style(args::PS_STYLE_CIRCLE);
 
     ///> Situation: completion during loop (search)
-    ps.proccess(big_size);
+    ps.process(big_size, "iteration with COMPLETE");
     for (int i = 0; i < big_size; ++i){
         //...
         if ( i == small_size){

@@ -188,7 +188,7 @@ Logger::expr Logger::operator()(unsigned ll){
     lock_guard<mutex> lock(_mutex);
     _message_level = ll;
     if (_message_level <= _loglevel())
-        _log_msg.append(prep_time() + prep_level() + "‣ ");
+        _log_msg.append(prep_time() + prep_level() + "\033[1;31m‣ \033[0;0m");
     else
         _log_msg.append("_no_log_");
     
@@ -198,12 +198,12 @@ Logger::expr Logger::operator()(unsigned ll){
 string Logger::prep_level() {
     if(_f_stat == args::LOG_STYLE_ON){
         switch (_message_level){
-        case args::LOG_ERR:   return string("[" + _color.at(args::LOG_ERR)  +  " ERROR   " + "\033[0;0m]"); break;
-        case args::LOG_WARN:  return string("[" + _color.at(args::LOG_WARN) +  " WARNING " + "\033[0;0m]"); break;
-        case args::LOG_INFO:  return string("[" + _color.at(args::LOG_INFO) +  " INFO    " + "\033[0;0m]"); break;
-        case args::LOG_DEBUG: return string("[" + _color.at(args::LOG_DEBUG) + " DEBUG   " + "\033[0;0m]"); break;
-        case args::LOG_TIME:  return string("[" + _color.at(args::LOG_TIME) +  " TIME    " + "\033[0;0m]"); break;
-        case args::LOG_DONE:  return string("[" + _color.at(args::LOG_DONE) +  " DONE    " + "\033[0;0m]"); break;
+        case args::LOG_ERR:   return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_ERR)  +  " ERROR   " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+        case args::LOG_WARN:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_WARN) +  " WARNING " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+        case args::LOG_INFO:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_INFO) +  " INFO    " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+        case args::LOG_DEBUG: return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_DEBUG) + " DEBUG   " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+        case args::LOG_TIME:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_TIME) +  " TIME    " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+        case args::LOG_DONE:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_DONE) +  " DONE    " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
         }
     }
     return "";
@@ -230,10 +230,10 @@ string Logger::prep_time() {
         if (t->tm_mon + 1 < 10) M = "0" + M;
 
         if (_f_color != args::LOG_COLORS_NONE){
-            ret.append("[ \033[0;34mD \033[0;96m" + Y + "-" + M + "-" + D + "; \033[0;34mT \033[0;96m" + h + ":" + m + ":" + s + "\033[0;0m ]");
+            ret.append("\033[1;31m[\033[0;0m \033[0;34mD \033[0;96m" + Y + "-" + M + "-" + D + "; \033[0;34mT \033[0;96m" + h + ":" + m + ":" + s + " \033[1;31m]\033[0;0m");
         }
         else{
-            ret.append("[ D " + D + "." + M + "." + Y + "; T " + h + ":" + m + ":" + s + " ]");    
+            ret.append("\033[1;31m[\033[0;0m D " + D + "." + M + "." + Y + "; T " + h + ":" + m + ":" + s + " \033[1;31m]\033[0;0m");    
         }    
     }
     return ret;

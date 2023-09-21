@@ -59,7 +59,8 @@ public:
     inline void         reset                   ();                                 ///> Reset to default state
     inline void         done                    ();                                 ///> Finalize with positive msg
     inline void         error                   ();                                 ///> Finalize with negative msg
-    inline void         proccess                (const uint64_t);                   ///> Set fixed sized proccess 
+    inline void         process                 (const uint64_t);                   ///> Set fixed sized process 
+    inline void         process                 (const uint64_t, const string _txt);///> Set fixed sized process & txt
 
     /*
     *   SYSTEM SETUP
@@ -70,10 +71,11 @@ private:
     /*
     *   SYSTEM
     */
-    inline string       prep_style              ();                                 ///> Prepare style icon
+    inline string       prep_spinner            ();                                 ///> Prepare style icon
     inline string       prep_percent            ();                                 ///> Prepare percentage 
     inline string       prep_status             ();                                 ///> Prepare status 
-    inline string       prep_info               ();                                 ///> Prepare information 
+    inline string       prep_iterations         ();                                 ///> Prepare iterations
+    inline string       prep_txt                ();                                 ///> Prepare txt
 
     ostream&            _fac;
     enum                _status_it              {
@@ -82,9 +84,9 @@ private:
         ERROR           = 2
     };
     array<string, 3>    _status                 {
-        "\033[0;47mIn progress \033[0;0m",
-        "\033[0;42mComplete    \033[0;0m",
-        "\033[0;41mError       \033[0;0m"
+        "\033[1;33mStarted\033[0;0m ",
+        "\033[1;32mComplete\033[0;0m",
+        "\033[1;31mError\033[0;0m   "
     };
     array<string, 9>    _style;
     int                 _style_it               {0};
@@ -96,7 +98,8 @@ private:
     uint64_t            _curr_it                {0};
     uint64_t            _size_it                {0};
     uint64_t            _size_max               {0};
-    // ╭ ─ ╰ ├
+    string              _curr_txt               {"Iteration"};
+    // ╭ ╰ ─ ├
 };
 
 
@@ -106,7 +109,7 @@ ProgSpin::ProgSpin(ostream& _f)
     : _fac(_f) 
 {}
 
-string ProgSpin::prep_style(){
+string ProgSpin::prep_spinner(){
     //set the speed of changes
     if (_f_interrupt != _status_it::COMPLETE){
         ++_style_it;
@@ -119,24 +122,28 @@ string ProgSpin::prep_style(){
 }
 
 string ProgSpin::prep_percent(){
-    return to_string(_progress) + "% ";
+    return to_string(_progress) + "%";
 }
 
 string ProgSpin::prep_status(){
     if (_f_interrupt == _status_it::IN_PROGRESS){
-        return "\033[1;31m|\033[0;0m \033[4;37mSTATUS\033[0;0m : " + _status.at(_status_it::IN_PROGRESS);
+        return _status.at(_status_it::IN_PROGRESS);
     }
     else if (_f_interrupt == _status_it::COMPLETE){
-        return "\033[1;31m|\033[0;0m \033[4;37mSTATUS\033[0;0m : " + _status.at(_status_it::COMPLETE);
+        return _status.at(_status_it::COMPLETE);
     }
     else if (_f_interrupt == _status_it::ERROR) {
-        return "\033[1;31m|\033[0;0m \033[4;37mSTATUS\033[0;0m : " + _status.at(_status_it::ERROR);
+        return _status.at(_status_it::ERROR);
     }
     return "";
 }
 
-string ProgSpin::prep_info(){
-    return "\033[1;31m |\033[0;0m \033[4;37mIT\033[0;0m : " + to_string(_size_it) + "\033[1;31m/\033[0;0m" + to_string(_size_max) + "\033[1;31m |\033[0;0m ";
+string ProgSpin::prep_iterations(){
+    return to_string(_size_it) + "\033[1;31m:\033[0;0m" + to_string(_size_max);
+}
+
+string ProgSpin::prep_txt(){
+    return "\033[1;34m" + _curr_txt + "\033[0;0m";
 }
 
 
@@ -158,14 +165,16 @@ void ProgSpin::update(){
     
     //change UI
     _fac << "\r";
-    _fac <<  prep_style() + prep_percent() + prep_status() + prep_info();
+    // _fac <<  prep_spinner() + prep_percent() + prep_status() + prep_iterations();
+    _fac << "╰─\033[1;31m[\033[0;0m " + prep_spinner() + " " + prep_percent() + "\033[1;31m ][ \033[0;0m" + prep_status() + " " + prep_iterations() + "\033[1;31m ]\033[0;0m";
     _fac.flush();
 }
 
 void ProgSpin::reset(){
     //change UI to final state
     _fac << "\r";
-    _fac <<  prep_style() + prep_percent() + prep_status() + prep_info();
+    // _fac <<  prep_spinner() + prep_percent() + prep_status() + prep_iterations();
+    _fac << "╰─\033[1;31m[\033[0;0m " + prep_spinner() + " " + prep_percent() + "\033[1;31m ][ \033[0;0m" + prep_status() + " " + prep_iterations() + "\033[1;31m ]\033[0;0m";
     _fac.flush();
     _fac << endl;
 
@@ -176,6 +185,8 @@ void ProgSpin::reset(){
     _one_prct = 0;
     _size_it = 0;
     _size_max = 0;
+    _curr_txt.clear();
+    _curr_txt.append("Iteration");
     _f_interrupt = _status_it::IN_PROGRESS;
 }
 
@@ -187,10 +198,18 @@ void ProgSpin::error(){
     _f_interrupt = _status_it::ERROR;
 }
 
-void ProgSpin::proccess(const uint64_t _size){
+void ProgSpin::process(const uint64_t _size){
     //set 1% value
     _one_prct = _size / 100;
     _size_max = _size;
+    _fac << "╭─\033[1;31m[ \033[0;0m" + prep_txt() + "\033[1;31m ]\033[0;0m" << endl;
+}
+
+void ProgSpin::process(const uint64_t _size, const string _txt){
+    //add txt
+    _curr_txt.clear();
+    _curr_txt.append(_txt);
+    process(_size);
 }
 
 void ProgSpin::set_style(const args::style _s){
@@ -199,43 +218,43 @@ void ProgSpin::set_style(const args::style _s){
     case args::PS_STYLE_SQUARE:
         _style = {
             // "\033[1;31m    \033[0;0m",
-            "\033[1;31m ⬚  \033[0;0m",
-            "\033[1;31m ◼  \033[0;0m",
-            "\033[1;31m ⬚  \033[0;0m",
-            "\033[1;31m    \033[0;0m",
-            "\033[1;31m ⬚  \033[0;0m",
-            "\033[1;31m ◼  \033[0;0m",
-            "\033[1;31m ⬚  \033[0;0m",
-            "\033[1;31m    \033[0;0m",
-            "\033[1;31m ◼  \033[0;0m"   /* FINAL */
+            "\033[1;31m⬚\033[0;0m",
+            "\033[1;31m◼\033[0;0m",
+            "\033[1;31m⬚\033[0;0m",
+            "\033[1;31m \033[0;0m",
+            "\033[1;31m⬚\033[0;0m",
+            "\033[1;31m◼\033[0;0m",
+            "\033[1;31m⬚\033[0;0m",
+            "\033[1;31m \033[0;0m",
+            "\033[1;31m◼\033[0;0m"   /* FINAL */
         };
         break;
 
     case args::PS_STYLE_CIRCLE:
         _style = {
-            "\033[1;31m ◝  \033[0;0m",
-            "\033[1;31m ◞  \033[0;0m",
-            "\033[1;31m ◟  \033[0;0m",
-            "\033[1;31m ◜  \033[0;0m",
-            "\033[1;31m ◝  \033[0;0m",
-            "\033[1;31m ◞  \033[0;0m",
-            "\033[1;31m ◟  \033[0;0m",
-            "\033[1;31m ◜  \033[0;0m",
-            "\033[1;31m ◯  \033[0;0m"   /* FINAL */
+            "\033[1;31m⠈\033[0;0m",
+            "\033[1;31m⠐\033[0;0m",
+            "\033[1;31m⠠\033[0;0m",
+            "\033[1;31m⢀\033[0;0m",
+            "\033[1;31m⡀\033[0;0m",
+            "\033[1;31m⠄\033[0;0m",
+            "\033[1;31m⠂\033[0;0m",
+            "\033[1;31m⠁\033[0;0m",
+            "\033[1;31m⣿\033[0;0m"   /* FINAL */
         };
         break;
 
     case args::PS_STYLE_LINUX:
         _style = {
-            "\033[1;31m |  \033[0;0m",
-            "\033[1;31m ╱  \033[0;0m",
-            "\033[1;31m —  \033[0;0m",
-            "\033[1;31m ╲  \033[0;0m",
-            "\033[1;31m |  \033[0;0m",
-            "\033[1;31m ╱  \033[0;0m",
-            "\033[1;31m —  \033[0;0m",
-            "\033[1;31m ╲  \033[0;0m",
-            "\033[1;31m X  \033[0;0m"   /* FINAL */
+            "\033[1;31m|\033[0;0m",
+            "\033[1;31m╱\033[0;0m",
+            "\033[1;31m—\033[0;0m",
+            "\033[1;31m╲\033[0;0m",
+            "\033[1;31m|\033[0;0m",
+            "\033[1;31m╱\033[0;0m",
+            "\033[1;31m—\033[0;0m",
+            "\033[1;31m╲\033[0;0m",
+            "\033[1;31mX\033[0;0m"   /* FINAL */
         };
         break;
     }
