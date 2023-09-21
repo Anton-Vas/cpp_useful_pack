@@ -188,59 +188,72 @@ int main(int argc, char** argv){
 #endif
 #if defined(PROGSPIN)
     
-    std::cout << "\n~~~~~~ PROGSPIN STANDARD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+    std::cout << "\n\n~~~~~~ PROGSPIN STANDARD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
     ///> Init
     PS_INIT_COUT();
 
+    ///> Change style
+    ps.set_style(args::PS_STYLE_LINUX);
+
+    ///> Some sizes 
+    const int big_size                  {1000}; ///> 100% of resource
+    const int small_size                {400};  ///> N%  of resource -> INTERRUPT
+    const chrono::milliseconds wait_ms  {50};
+
     ///> General usage
-    for (int i = 0; i < 99999999; ++i){
+    ps.proccess(big_size);
+    for (int i = 0; i < big_size; ++i){
         //...
+        this_thread::sleep_for(wait_ms);
         ps.update();
     }
     ps.reset();
 
-
-    std::cout << "\n~~~~~~ PROGSPIN COMPLETE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
-    ///> Change style
-    ps.set_style(args::PS_STYLE_CIRCLE);
-
-    ///> Situation: completion during loop
-    for (int i = 0; i < 99999999; ++i){
-        //...
-        if ( i == 99999){
-            ps.done();
-            break;
-        }
-        //...
-        ps.update();
-    }
-    ps.reset();
-
-    std::cout << "\n~~~~~~ PROGSPIN ERROR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
-    ///> Change style
-    ps.set_style(args::PS_STYLE_CIRCLE);
     
-    ///> Situation: error during loop
-    for (int i = 0; i < 99999999; ++i){
+    std::cout << "\n\n~~~~~~ PROGSPIN ERROR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+
+    this_thread::sleep_for(1000ms);
+
+    ///> Change style
+    ps.set_style(args::PS_STYLE_SQUARE);
+
+    ///> Situation: error during loop (critical error)
+    ps.proccess(big_size);
+    for (int i = 0; i < big_size; ++i){
         //...
-        if ( i == 99999){
+        if ( i == small_size){
             ps.error();
             break;
         }
         //...
+        this_thread::sleep_for(wait_ms);
         ps.update();
     }
     ps.reset();
 
 
-    std::cout << "\n~~~~~~ PROGSPIN DOWNLOAD/PROCCESS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
-    ///> Situation: download or proccess fixed sized resource
-    ps.proccess("file_name", 99999999);
-    for (int i = 0; i < 99999999; ++i){
+    std::cout << "\n\n~~~~~~ PROGSPIN COMPLETE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+
+    this_thread::sleep_for(1000ms);
+
+    ///> Change style
+    ps.set_style(args::PS_STYLE_CIRCLE);
+
+    ///> Situation: completion during loop (search)
+    ps.proccess(big_size);
+    for (int i = 0; i < big_size; ++i){
         //...
+        if ( i == small_size){
+            ps.done();
+            break;
+        }
+        //...
+        this_thread::sleep_for(wait_ms);
         ps.update();
     }
     ps.reset();
+
+    
 #endif
 }
 

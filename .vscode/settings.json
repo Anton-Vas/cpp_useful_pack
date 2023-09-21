@@ -65,6 +65,7 @@
         "CERR",
         "COUT",
         "ostream",
+        "prct",
         "PROGSPIN",
         "ROUNDBAR"
     ]
