@@ -9,13 +9,13 @@ using namespace std;
 #define LOGGER
 // #define PROGBAR
 #define PROGSPIN
+////////////////////////////////////////////////////
 
 #if defined(LOGGER)
     #include <Logger.hpp>
 #endif
 #if defined(PROGBAR)
     #include <ProgBar.hpp>
-    using namespace cpp_up;
 #endif
 #if defined(PROGSPIN)
     #include <ProgSpin.hpp>
@@ -23,7 +23,6 @@ using namespace std;
 
 using namespace cpp_up;
 using namespace args;
-////////////////////////////////////////////////////
 
 
 int main(int argc, char** argv){
@@ -172,16 +171,70 @@ int main(int argc, char** argv){
 #endif
 #if defined(PROGBAR)
     
-    // std::cout << "\n~~~~~~ PROGBAR OLD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
-    
-    // int some_size = 99999999;
-    // ProgBar<uint64_t> pb(std::cout, some_size);
-    // for (uint64_t i = 0; i < some_size; i+=4) {
-    //     pb += 2;
-    //     pb++;
-    //     ++pb;
+    std::cout << "\n\n~~~~~~ PROGBAR STANDARD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+    ///> Init
+    // PS_INIT_COUT();
+
+    ///> Change style
+    // ps.set_style(args::PS_STYLE_LINUX);
+
+    ///> Some sizes 
+    // const int big_size                  {100}; ///> 100% of resource
+    // const int small_size                {40};  ///> N%  of resource -> INTERRUPT
+    // const chrono::milliseconds wait_ms  {50};
+
+    ///> General usage
+    // ps.process(big_size);
+    // for (int i = 0; i < big_size; ++i){
+    //     //...
+    //     this_thread::sleep_for(wait_ms);
+    //     ps.update();
     // }
-    // pb.finalize();
+    // ps.reset();
+
+    
+    std::cout << "\n\n~~~~~~ PROGBAR ERROR ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+
+    this_thread::sleep_for(1000ms);
+
+    ///> Change style
+    // ps.set_style(args::PS_STYLE_SQUARE);
+
+    ///> Situation: error during loop (critical error)
+    // ps.process(big_size, "iteration with ERROR");
+    // for (int i = 0; i < big_size; ++i){
+    //     //...
+    //     if ( i == small_size){
+    //         ps.error();
+    //         break;
+    //     }
+    //     //...
+    //     this_thread::sleep_for(wait_ms);
+    //     ps.update();
+    // }
+    // ps.reset();
+
+
+    std::cout << "\n\n~~~~~~ PROGBAR COMPLETE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
+
+    this_thread::sleep_for(1000ms);
+
+    ///> Change style
+    // ps.set_style(args::PS_STYLE_CIRCLE);
+
+    ///> Situation: completion during loop (search)
+    // ps.process(big_size, "iteration with COMPLETE");
+    // for (int i = 0; i < big_size; ++i){
+    //     //...
+    //     if ( i == small_size){
+    //         ps.done();
+    //         break;
+    //     }
+    //     //...
+    //     this_thread::sleep_for(wait_ms);
+    //     ps.update();
+    // }
+    // ps.reset();
 
     std::cout << "\n~~~~~~ PROGBAR NEW ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" << std::endl;
 

@@ -143,7 +143,7 @@ string ProgSpin::prep_iterations(){
 }
 
 string ProgSpin::prep_txt(){
-    return "note \033[1;31m:\033[0;0m \033[1;96m" + _curr_txt + "\033[0;0m";
+    return "NOTE \033[1;31m:\033[0;0m \033[1;96m" + _curr_txt + "\033[0;0m";
 }
 
 

@@ -187,8 +187,13 @@ Logger::Logger(ostream& f)
 Logger::expr Logger::operator()(unsigned ll){
     lock_guard<mutex> lock(_mutex);
     _message_level = ll;
-    if (_message_level <= _loglevel())
-        _log_msg.append(prep_time() + prep_level() + "\033[1;31m‣ \033[0;0m");
+    if (_message_level <= _loglevel()){
+        if (_f_color != args::LOG_COLORS_NONE){
+            _log_msg.append(prep_time() + prep_level() + "\033[1;31m‣ \033[0;0m");
+        }
+        else
+            _log_msg.append(prep_time() + prep_level() + "‣ ");   
+    }
     else
         _log_msg.append("_no_log_");
     
@@ -197,13 +202,25 @@ Logger::expr Logger::operator()(unsigned ll){
 
 string Logger::prep_level() {
     if(_f_stat == args::LOG_STYLE_ON){
-        switch (_message_level){
-        case args::LOG_ERR:   return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_ERR)  +  " ERROR   " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
-        case args::LOG_WARN:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_WARN) +  " WARNING " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
-        case args::LOG_INFO:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_INFO) +  " INFO    " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
-        case args::LOG_DEBUG: return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_DEBUG) + " DEBUG   " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
-        case args::LOG_TIME:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_TIME) +  " TIME    " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
-        case args::LOG_DONE:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_DONE) +  " DONE    " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+        if (_f_color != args::LOG_COLORS_NONE){
+            switch (_message_level){
+            case args::LOG_ERR:   return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_ERR)  +  " ERROR   " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+            case args::LOG_WARN:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_WARN) +  " WARNING " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+            case args::LOG_INFO:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_INFO) +  " INFO    " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+            case args::LOG_DEBUG: return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_DEBUG) + " DEBUG   " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+            case args::LOG_TIME:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_TIME) +  " TIME    " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+            case args::LOG_DONE:  return string("\033[1;31m[\033[0;0m" + _color.at(args::LOG_DONE) +  " DONE    " + "\033[0;0m\033[1;31m]\033[0;0m"); break;
+            }
+        }
+        else{
+            switch (_message_level){
+            case args::LOG_ERR:   return string("[" + _color.at(args::LOG_ERR)  +  " ERROR   " + "\033[0;0m]"); break;
+            case args::LOG_WARN:  return string("[" + _color.at(args::LOG_WARN) +  " WARNING " + "\033[0;0m]"); break;
+            case args::LOG_INFO:  return string("[" + _color.at(args::LOG_INFO) +  " INFO    " + "\033[0;0m]"); break;
+            case args::LOG_DEBUG: return string("[" + _color.at(args::LOG_DEBUG) + " DEBUG   " + "\033[0;0m]"); break;
+            case args::LOG_TIME:  return string("[" + _color.at(args::LOG_TIME) +  " TIME    " + "\033[0;0m]"); break;
+            case args::LOG_DONE:  return string("[" + _color.at(args::LOG_DONE) +  " DONE    " + "\033[0;0m]"); break;
+            }
         }
     }
     return "";
@@ -233,7 +250,7 @@ string Logger::prep_time() {
             ret.append("\033[1;31m[\033[0;0m \033[0;34mD \033[0;96m" + Y + "-" + M + "-" + D + "; \033[0;34mT \033[0;96m" + h + ":" + m + ":" + s + " \033[1;31m]\033[0;0m");
         }
         else{
-            ret.append("\033[1;31m[\033[0;0m D " + D + "." + M + "." + Y + "; T " + h + ":" + m + ":" + s + " \033[1;31m]\033[0;0m");    
+            ret.append("[ D " + D + "." + M + "." + Y + "; T " + h + ":" + m + ":" + s + " ]");    
         }    
     }
     return ret;
@@ -245,7 +262,7 @@ void Logger::add_snapshot(string n, bool quiet) {
     _snap_ns.push_back(n);
     if (_loglevel() >= args::LOG_TIME && !quiet)
         _message_level = args::LOG_TIME;
-        _fac << prep_time() + prep_level() + ": Added snap '" + n + "'\n";
+        _fac << prep_time() + prep_level() + "\033[1;31m‣\033[0;0m Added snap '" + n + "'\n";
 }
 
 void Logger::time_since_start() {
@@ -254,7 +271,7 @@ void Logger::time_since_start() {
         _now = high_resolution_clock::now();    
         _message_level = args::LOG_TIME;
         duration<double> t = duration_cast<duration<double>>(_now - _start);
-        _fac << prep_time() + prep_level() + "‣ " + to_string(t.count()) + "s since instantiation\n";
+        _fac << prep_time() + prep_level() + "\033[1;31m‣ \033[0;0m" + to_string(t.count()) + "s since instantiation\n";
     }
 }
 
@@ -264,7 +281,7 @@ void Logger::time_since_last_snap() {
         _now = high_resolution_clock::now();
         _message_level = args::LOG_TIME;
         duration<double> t = duration_cast<duration<double>>(_now - _snaps.back());
-        _fac << prep_time() + prep_level() + "‣ " + to_string(t.count()) + "s since last snap '" + _snap_ns.back() + "'\n";
+        _fac << prep_time() + prep_level() + "\033[1;31m‣ \033[0;0m" + to_string(t.count()) + "s since last snap '" + _snap_ns.back() + "'\n";
     }
 }
 
@@ -281,7 +298,7 @@ void Logger::time_since_snap(string s) {
         unsigned long dist = distance(_snap_ns.begin(), it);
         _message_level = args::LOG_TIME;
         duration<double> t = duration_cast<duration<double>>(_now - _snaps.at(dist));
-        _fac << prep_time() + prep_level() + "‣ " + to_string(t.count()) + "s since snap '" + _snap_ns[dist] + "'\n";
+        _fac << prep_time() + prep_level() + "\033[1;31m‣ \033[0;0m" + to_string(t.count()) + "s since snap '" + _snap_ns[dist] + "'\n";
     }
 }
 
